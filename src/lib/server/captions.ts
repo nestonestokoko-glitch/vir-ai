@@ -23,6 +23,25 @@ interface PlayerResponse {
   };
 }
 
+/**
+ * `fetch` with an abort timeout. Serverless functions must not block on a
+ * stuck upstream (YouTube egress can stall); without this, `await fetch`
+ * would hang until the function timeout and the job would never complete.
+ */
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit = {},
+  timeoutMs = 12000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function scrapePlayerResponse(html: string): PlayerResponse | null {
   const marker = "ytInitialPlayerResponse";
   const start = html.indexOf(marker);
@@ -131,7 +150,7 @@ export async function fetchRealCaptions(
   if (!videoId) return null;
 
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  const res = await fetch(watchUrl, {
+  const res = await fetchWithTimeout(watchUrl, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; VIRAI/1.0)" },
   });
   if (!res.ok) return null;
@@ -146,7 +165,7 @@ export async function fetchRealCaptions(
     tracks.find((t) => t.languageCode === preferredLang) ?? tracks[0];
   if (!track?.baseUrl) return null;
 
-  const capRes = await fetch(track.baseUrl, {
+  const capRes = await fetchWithTimeout(track.baseUrl, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; VIRAI/1.0)" },
   });
   if (!capRes.ok) return null;

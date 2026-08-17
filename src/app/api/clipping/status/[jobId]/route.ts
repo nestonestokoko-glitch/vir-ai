@@ -20,17 +20,16 @@ export async function GET(
     const isTerminal = job.status === "completed" || job.status === "failed";
     if (!isTerminal && job.config && job.metadata) {
       const ageMs = Date.now() - new Date(job.updatedAt).getTime();
-      // Re-drive only when the background work is genuinely frozen, not merely
-      // slow: a healthy job updates its timestamp as each stage progresses
-      // (e.g. a local video download can legitimately take >30s). We restart if
-      // it never left "queued" (background never started — the common serverless
-      // freeze right after the HTTP response) or has been stuck non-terminal for
-      // a long time (frozen mid-pipeline).
+      // The process endpoint awaits the pipeline on Netlify (serverless freezes
+      // fire-and-forget work after the response), so a job normally reaches a
+      // terminal state before the first status poll. The only case we re-drive
+      // is a job stuck in "queued" — i.e. the process endpoint returned before the
+      // pipeline ran (e.g. it 504'd right after saving the initial job). We do
+      // NOT re-drive mid-pipeline stages: on serverless a re-driven job freezes
+      // again, resetting its timestamp and looping forever at "analyzing".
       const frozenAtStart = job.status === "queued" && ageMs > 2000;
-      const frozenMid = ageMs > 45000;
-      if (frozenAtStart || frozenMid) {
-        // Background work likely froze — restart it (idempotent; writes
-        // progress back to the persistent store as it goes).
+      if (frozenAtStart) {
+        // Restart the pipeline (idempotent; writes progress back to the store).
         processJobAsync(
           job.id,
           job.config,

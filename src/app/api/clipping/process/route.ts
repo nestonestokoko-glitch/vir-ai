@@ -53,8 +53,18 @@ export async function POST(req: NextRequest) {
 
     await saveJob(initialJob);
 
-    // Run the real processing pipeline asynchronously with graceful fallbacks.
-    processJobAsync(jobId, config, metadata, clipCount, clipDuration);
+    // On serverless (Netlify) the runtime freezes background work after the
+    // HTTP response is sent, so a fire-and-forget job would never finish and
+    // the UI would hang forever. Await it here so the function stays alive
+    // until the job is complete. The no-binary path (no yt-dlp/ffmpeg) is fast,
+    // and the external network calls are bounded by timeouts, so this stays
+    // well within the function timeout. Locally we keep it fire-and-forget so
+    // the dev server stays responsive during long video downloads.
+    if (process.env.NETLIFY) {
+      await processJobAsync(jobId, config, metadata, clipCount, clipDuration);
+    } else {
+      processJobAsync(jobId, config, metadata, clipCount, clipDuration);
+    }
 
     return NextResponse.json({
       success: true,
