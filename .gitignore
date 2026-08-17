@@ -30,8 +30,27 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# rendered clips (generated at runtime by the clipping pipeline)
+/public/generated/
+
 # env files (can opt-in for committing if needed)
 .env*
+
+# runtime server logs / pids
+server*.log
+server*.err
+server*.pid
+server-log.txt
+
+# downloaded/test media + pipeline scratch
+/tmp/
+
+# bundled third-party binaries
+/bin/
+
+# editor / stray backups
+*.backup
+*.bak
 
 # vercel
 .vercel

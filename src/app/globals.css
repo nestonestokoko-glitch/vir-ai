@@ -1,26 +1,345 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --bg-deep: #01040f;
+  --bg-mid: #050b24;
+  --card-bg: linear-gradient(160deg, rgba(10,18,48,0.8), rgba(3,6,20,0.9));
+  --card-border: rgba(90,115,200,0.14);
+
+  --background: 236 88% 3%;
+  --foreground: 210 40% 98%;
+
+  --card: 236 88% 5%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 236 88% 4%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 236 32.6% 12%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 236 32.6% 12%;
+  --muted-foreground: 215.4 16.3% 56.9%;
+
+  --accent: 236 32.6% 12%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 236 32.6% 15%;
+  --input: 236 32.6% 15%;
+  --ring: 221.2 83.2% 53.3%;
+
+  --radius: 28px;
+
+  --brand-blue: 0488C5;
+  --brand-light: E5E6E7;
+  --brand-accent: 526EF5;
+
+  /* Studio theme */
+  --studio-bg: #01040f;
+  --studio-green: #38bdf8;
+  --studio-green-hover: #0ea5e9;
+  --studio-green-muted: rgba(56, 189, 248, 0.1);
+  --studio-border: rgba(90,115,200,0.14);
+  --studio-muted: #64748b;
+  --studio-surface: rgba(10,18,48,0.5);
+}
+
+.dark {
+  --background: 236 88% 3%;
+  --foreground: 210 40% 98%;
+
+  --card: 236 88% 5%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 236 88% 4%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 84% 4.9%;
+
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 39.4% 83.2%;
+
+  --brand-blue: 0488C5;
+  --brand-light: E5E6E7;
+  --brand-accent: 526EF5;
+}
+
+@layer base {
+  * {
+    border-color: rgba(90, 115, 200, 0.14);
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: linear-gradient(160deg, var(--bg-deep), var(--bg-mid) 70%, #010208) !important;
+    color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* Brand color utilities */
+  .bg-brand-blue {
+    background-color: #0488C5;
+  }
+  .bg-brand-light {
+    background-color: #E5E6E7;
+  }
+  .bg-brand-accent {
+    background-color: #526EF5;
+  }
+  .text-brand-blue {
+    color: #0488C5;
+  }
+  .text-brand-light {
+    color: #E5E6E7;
+  }
+  .text-brand-accent {
+    color: #526EF5;
+  }
+  .border-brand-blue {
+    border-color: #0488C5;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Text shadow for better readability on video */
+.text-shadow {
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Custom scrollbar - Clean dark style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(90, 115, 200, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(90, 115, 200, 0.4);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(64px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-down {
+  animation: fade-down 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-hero-rise {
+  animation: hero-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-down,
+  .animate-hero-rise {
+    animation: none;
+  }
+}
+
+/* Studio UI utilities */
+.studio-bg {
+  background: linear-gradient(160deg, var(--bg-deep), var(--bg-mid) 70%, #010208) !important;
+}
+
+.studio-surface {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+.studio-green {
+  color: var(--studio-green);
+}
+
+.bg-studio-green {
+  background-color: var(--studio-green);
+}
+
+.bg-studio-green:hover,
+.hover\:bg-studio-green-hover:hover {
+  background-color: var(--studio-green-hover);
+}
+
+.border-studio {
+  border-color: var(--card-border);
+}
+
+.studio-btn-primary {
+  background: linear-gradient(to right, #0284c7, #0369a1);
+  color: #ffffff;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.studio-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(to right, #0ea5e9, #0284c7);
+}
+
+.studio-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Premium Card and inputs from the prompt guidelines */
+.card-premium, .studio-card, .card {
+  border-radius: 28px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.studio-card-selected {
+  border-color: rgba(90, 115, 200, 0.6) !important;
+  background: linear-gradient(160deg, rgba(16, 28, 76, 0.9), rgba(5, 10, 30, 0.95)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 12px rgba(90, 115, 200, 0.15) !important;
+}
+
+/* Premium Inputs, Textareas, and Dropdowns */
+.studio-input, input[type="text"], input[type="number"], select, textarea {
+  border-radius: 12px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+  padding: 12px 16px !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.studio-input:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+  border-color: rgba(90, 115, 200, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 8px rgba(90, 115, 200, 0.2) !important;
+}
+
+/* Dark scrollbar for studio */
+.studio-scroll::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+.studio-scroll::-webkit-scrollbar-thumb {
+  background: rgba(90, 115, 200, 0.2);
+  border-radius: 9999px;
+}
+
+.studio-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(90, 115, 200, 0.4);
+}
+
+/* ===== Clip caption animation keyframes ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  60% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
