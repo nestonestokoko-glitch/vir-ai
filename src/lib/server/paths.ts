@@ -7,6 +7,11 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+// ESM context: resolve CJS binary packages (ffmpeg-static / ffprobe-static)
+// which export their executable path as the module's main export.
+const require = createRequire(import.meta.url);
 
 /**
  * Locate the project root robustly. In Next dev, server modules are compiled
@@ -52,6 +57,17 @@ function resolveFromEnv(name: string): string | null {
   return val && fs.existsSync(val) ? val : null;
 }
 
+/** Resolve a binary shipped by an npm package (ffmpeg-static / ffprobe-static). */
+function requirePath(pkg: string): string | null {
+  try {
+    const mod = require(pkg);
+    const p: string | undefined = typeof mod === "string" ? mod : mod?.path;
+    return p && fs.existsSync(p) ? p : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Find ffmpeg binary. */
 export function findFfmpeg(): string | null {
   if (process.env.FFMPEG_PATH) {
@@ -73,7 +89,8 @@ export function findFfmpeg(): string | null {
       /* keep looking */
     }
   }
-  return null;
+  // Bundled static binary (used on serverless where no system ffmpeg exists).
+  return requirePath("ffmpeg-static");
 }
 
 /** Find yt-dlp binary (standalone exe or python module). */
@@ -81,6 +98,19 @@ export function findYtDlp(): string | null {
   if (process.env.YTDLP_PATH) {
     const p = resolveFromEnv("YTDLP_PATH");
     if (p) return p;
+  }
+  // Committed standalone Linux binary — used on serverless (no system yt-dlp,
+  // and the OS is Linux). Skipped on Windows dev so we don't pick the ELF.
+  if (process.platform === "linux") {
+    const linuxBin = path.join(PROJECT_ROOT, "bin", "linux", "yt-dlp");
+    if (fs.existsSync(linuxBin)) {
+      try {
+        fs.chmodSync(linuxBin, 0o755);
+      } catch {
+        /* exec bit may already be set */
+      }
+      return linuxBin;
+    }
   }
   const candidates = [
     path.join(PROJECT_ROOT, "bin", "yt-dlp.exe"),
@@ -95,6 +125,21 @@ export function findYtDlp(): string | null {
     } catch {
       /* keep looking */
     }
+  }
+  return null;
+}
+
+/** Find ffprobe (sibling of ffmpeg, or the ffprobe-static npm package). */
+export function findFfprobe(): string | null {
+  const p = requirePath("ffprobe-static");
+  if (p) return p;
+  const ffmpeg = findFfmpeg();
+  if (ffmpeg) {
+    const sib = path.join(
+      path.dirname(ffmpeg),
+      process.platform === "win32" ? "ffprobe.exe" : "ffprobe"
+    );
+    if (fs.existsSync(sib)) return sib;
   }
   return null;
 }

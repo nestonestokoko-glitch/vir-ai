@@ -12,8 +12,32 @@ import fs from "node:fs";
 import path from "node:path";
 import { findFfmpeg, findYtDlp, PROJECT_ROOT } from "./paths";
 import { extractYouTubeId } from "@/lib/youtube";
+import { IS_SERVERLESS } from "./isServerless";
 
-const WORK_DIR = path.join(PROJECT_ROOT, "tmp", "ingest");
+// Serverless filesystems are read-only except /tmp.
+const WORK_DIR = IS_SERVERLESS
+  ? path.join("/tmp", "ingest")
+  : path.join(PROJECT_ROOT, "tmp", "ingest");
+
+/**
+ * Egress proxy for yt-dlp. YouTube bot-blocks datacenter IPs (which is what
+ * Netlify Functions run on), so downloads from the serverless backend need to
+ * egress through a residential/rotating proxy. `YTDLP_PROXY` is a comma-
+ * separated list of endpoints; we round-robin across them so a single blocked
+ * or rate-limited endpoint doesn't sink the whole job. Leave unset for local
+ * dev (residential IP, no proxy needed).
+ */
+const PROXY_LIST = (process.env.YTDLP_PROXY || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+let proxyCursor = 0;
+function nextProxy(): string | null {
+  if (!PROXY_LIST.length) return null;
+  const p = PROXY_LIST[proxyCursor % PROXY_LIST.length];
+  proxyCursor++;
+  return p;
+}
 
 /**
  * YouTube bot-blocks the default web client's download URLs (HTTP 403 /
@@ -54,10 +78,14 @@ function ffmpegEnv(): NodeJS.ProcessEnv {
 function runYtDlp(args: string[], timeoutMs: number): Promise<void> {
   const ytDlp = findYtDlp();
   if (!ytDlp) return Promise.reject(new Error("yt-dlp not found"));
+  // Route egress through the (rotating) proxy so YouTube doesn't block the
+  // datacenter IP. `--proxy` is a global option, safe to prepend.
+  const proxy = nextProxy();
+  const fullArgs = proxy ? ["--proxy", proxy, ...args] : args;
   return new Promise((resolve, reject) => {
     execFile(
       ytDlp,
-      args,
+      fullArgs,
       { timeout: timeoutMs, stdio: "ignore", env: ffmpegEnv(), windowsHide: true } as any,
       (err: any) => (err ? reject(err) : resolve())
     );
@@ -136,8 +164,10 @@ export async function ingestVideo(url: string): Promise<IngestResult | null> {
         ...YTDLP_PLAYER_CLIENT_ARGS,
         url,
         "--no-playlist",
+        // Cap at 720p: smaller download finishes well within the function
+        // timeout (full 1080p videos can blow it on a slow proxy).
         "-f",
-        "22/best[ext=mp4]/best[height<=720][ext=mp4]/18",
+        "best[height<=720][ext=mp4]/best[height<=720]",
         "-o",
         videoPath,
         "--no-warnings",
@@ -146,12 +176,22 @@ export async function ingestVideo(url: string): Promise<IngestResult | null> {
       240_000
     );
 
-    // If the strict format filter found nothing (many videos lack format 22
-    // or any MP4 stream), fall back to letting yt-dlp pick the best available
-    // stream so we still get a real clip instead of bailing out to null.
+    // If the strict format filter found nothing (many videos lack an MP4
+    // stream), fall back to the best available stream capped at 720p so we
+    // still get a real clip instead of bailing out to null.
     if (!fs.existsSync(videoPath)) {
       await runYtDlp(
-        [...YTDLP_PLAYER_CLIENT_ARGS, url, "--no-playlist", "-o", videoPath, "--no-warnings", "--quiet"],
+        [
+          ...YTDLP_PLAYER_CLIENT_ARGS,
+          url,
+          "--no-playlist",
+          "-f",
+          "best[height<=720]",
+          "-o",
+          videoPath,
+          "--no-warnings",
+          "--quiet",
+        ],
         300_000
       );
     }

@@ -12,6 +12,7 @@ import { ingestVideo, fetchCaptionsOnly } from "@/lib/server/ingest";
 import { transcribeAudio } from "@/lib/server/transcribe";
 import { renderClip, getVideoDuration } from "@/lib/server/render";
 import { saveJob, getJob } from "@/lib/server/jobStore";
+import { saveClip } from "@/lib/server/clipStore";
 import { IS_SERVERLESS } from "@/lib/server/isServerless";
 
 export async function POST(req: NextRequest) {
@@ -112,11 +113,24 @@ export async function processJobAsync(
     // Fast path first: scrape YouTube's public timedtext captions over HTTP
     // (~1-3s). Fall back to a yt-dlp subtitle download only if the scrape finds
     // nothing — the yt-dlp path is slower but handles videos without web captions.
-    let transcript = await fetchRealCaptions(config.videoUrl).catch(() => null);
-    if (!transcript || transcript.length === 0) {
+    //
+    // On serverless WITH an egress proxy, the native fetch would still hit
+    // YouTube from the blocked datacenter IP, so we go straight to yt-dlp
+    // (which routes through the proxy) for captions instead.
+    const useProxiedCaptions = IS_SERVERLESS && !!process.env.YTDLP_PROXY;
+    let transcript: import("@/lib/clip-types").TranscriptSegment[] | null = null;
+    if (useProxiedCaptions) {
       const captionPath = await fetchCaptionsOnly(config.videoUrl).catch(() => null);
       if (captionPath && fs.existsSync(captionPath)) {
         transcript = parseVtt(fs.readFileSync(captionPath, "utf8"));
+      }
+    } else {
+      transcript = await fetchRealCaptions(config.videoUrl).catch(() => null);
+      if (!transcript || transcript.length === 0) {
+        const captionPath = await fetchCaptionsOnly(config.videoUrl).catch(() => null);
+        if (captionPath && fs.existsSync(captionPath)) {
+          transcript = parseVtt(fs.readFileSync(captionPath, "utf8"));
+        }
       }
     }
     const hasCaptions = !!(transcript && transcript.length > 0);
@@ -226,6 +240,21 @@ export async function processJobAsync(
         if (sourceVideoPath) {
           const rendered = await renderClip(clip, sourceVideoPath);
           if (rendered) {
+            // Persist the rendered MP4 so the separate /api/clips serving
+            // invocation can return it. On serverless this goes to Netlify
+            // Blobs (local disk isn't shared across invocations); locally it
+            // writes to public/generated as before.
+            try {
+              const buf = fs.readFileSync(rendered);
+              await saveClip(clip.id, buf);
+              try {
+                fs.unlinkSync(rendered);
+              } catch {
+                /* ignore cleanup */
+              }
+            } catch {
+              /* keep the file on disk as a fallback */
+            }
             return { ...clip, videoUrl: `/api/clips/${clip.id}.mp4` };
           }
         }

@@ -9,10 +9,15 @@
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { findFfmpeg, PROJECT_ROOT } from "./paths";
+import { findFfmpeg, findFfprobe, PROJECT_ROOT } from "./paths";
+import { IS_SERVERLESS } from "./isServerless";
 import type { GeneratedClip } from "@/lib/clip-types";
 
-const OUT_DIR = path.join(PROJECT_ROOT, "public", "generated");
+// On serverless the filesystem is read-only except /tmp, so render outputs go
+// there; locally we keep the existing public/generated dir.
+const OUT_DIR = IS_SERVERLESS
+  ? path.join("/tmp", "generated")
+  : path.join(PROJECT_ROOT, "public", "generated");
 
 function ensureDir(dir: string) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -72,8 +77,8 @@ function fmt(sec: number): string {
 export async function getVideoDuration(videoPath: string): Promise<number | null> {
   const ffmpeg = findFfmpeg();
   if (!ffmpeg || !fs.existsSync(videoPath)) return null;
-  const ffprobe = path.join(path.dirname(ffmpeg), "ffprobe.exe");
-  if (!fs.existsSync(ffprobe)) return null;
+  const ffprobe = findFfprobe();
+  if (!ffprobe) return null;
   try {
     const out = await new Promise<string>((resolve, reject) =>
       execFile(
