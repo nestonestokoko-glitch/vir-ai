@@ -155,6 +155,11 @@ export interface ProcessingJob {
   error?: string;
   createdAt: string;
   updatedAt: string;
+  // Stored so the status endpoint can re-drive a job whose background work was
+  // frozen by the serverless runtime (in-memory state does not survive across
+  // invocations on Netlify). Optional — only used for self-healing.
+  config?: ClippingProjectConfig;
+  metadata?: VideoMetadata;
 }
 
 export interface ClippingProjectConfig {

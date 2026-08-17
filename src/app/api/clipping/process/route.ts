@@ -11,9 +11,7 @@ import { fetchRealCaptions, parseVtt } from "@/lib/server/captions";
 import { ingestVideo, fetchCaptionsOnly } from "@/lib/server/ingest";
 import { transcribeAudio } from "@/lib/server/transcribe";
 import { renderClip, getVideoDuration } from "@/lib/server/render";
-
-// Global job state registry
-const jobsStore: Map<string, ProcessingJob> = new Map();
+import { saveJob, getJob } from "@/lib/server/jobStore";
 
 export async function POST(req: NextRequest) {
   try {
@@ -47,9 +45,13 @@ export async function POST(req: NextRequest) {
       generatedClips: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      // Persisted so the status endpoint can re-drive this job if the
+      // serverless runtime freezes the background work after the response.
+      config,
+      metadata,
     };
 
-    jobsStore.set(jobId, initialJob);
+    await saveJob(initialJob);
 
     // Run the real processing pipeline asynchronously with graceful fallbacks.
     processJobAsync(jobId, config, metadata, clipCount, clipDuration);
@@ -67,22 +69,22 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export function getJobById(jobId: string): ProcessingJob | undefined {
-  return jobsStore.get(jobId);
+export async function getJobById(jobId: string): Promise<ProcessingJob | undefined> {
+  return getJob(jobId);
 }
 
-async function processJobAsync(
+export async function processJobAsync(
   jobId: string,
   config: ClippingProjectConfig,
   metadata: any,
   clipCount: number,
   clipDuration: number
 ) {
-  const updateJob = (updates: Partial<ProcessingJob>) => {
-    const existing = jobsStore.get(jobId);
+  const updateJob = async (updates: Partial<ProcessingJob>) => {
+    const existing = await getJob(jobId);
     if (existing) {
       const updated = { ...existing, ...updates, updatedAt: new Date().toISOString() };
-      jobsStore.set(jobId, updated);
+      await saveJob(updated);
     }
   };
 
@@ -90,7 +92,7 @@ async function processJobAsync(
     // ── Stage 1: Caption-first fetch (no video download yet) ─────────────────
     // Grab ONLY the subtitle track — no full-video download — so we can score
     // the best moments immediately for captioned videos.
-    updateJob({
+    await updateJob({
       status: "fetching",
       progressPercentage: 15,
       currentStepMessage: "Fetching captions (caption-first — skipping full video download)...",
@@ -117,13 +119,13 @@ async function processJobAsync(
     let sourceVideoPath: string | null = null;
 
     if (hasCaptions) {
-      updateJob({
+      await updateJob({
         status: "transcribing",
         progressPercentage: 30,
         currentStepMessage: "Real captions retrieved — aligning words & speakers...",
       });
     } else if (process.env.GROQ_API_KEY) {
-      updateJob({
+      await updateJob({
         status: "transcribing",
         progressPercentage: 30,
         currentStepMessage: "No captions found — downloading audio to transcribe with Groq Whisper...",
@@ -135,7 +137,7 @@ async function processJobAsync(
         if (whisper && whisper.length > 0) transcript = whisper;
       }
     } else {
-      updateJob({
+      await updateJob({
         status: "transcribing",
         progressPercentage: 30,
         currentStepMessage: "No captions found — using fallback transcript for analysis...",
@@ -148,7 +150,7 @@ async function processJobAsync(
     // configured) or the keyword scorer. Finds distinct high-value moments across
     // the video, each tagged with a scene type. Runs off the transcript (captions
     // OR transcribed audio). ───────────────────────────────────────────────────
-    updateJob({
+    await updateJob({
       status: "analyzing",
       progressPercentage: 55,
       currentStepMessage: "AI analyzing narrative, hooks, emotional peaks & high-value moments...",
@@ -168,7 +170,7 @@ async function processJobAsync(
     );
 
     // ── Stage 4: per-moment clip generation ─────────────────────────────────
-    updateJob({
+    await updateJob({
       status: "selecting",
       progressPercentage: 70,
       currentStepMessage: `Building ${clipCount} distinct scene-type clips from detected moments...`,
@@ -202,7 +204,7 @@ async function processJobAsync(
 
     // ── Stage 5: render every clip concurrently (independent ffmpeg child
     // processes), so the N cuts finish in roughly the time of one. ────────────
-    updateJob({
+    await updateJob({
       status: "rendering",
       progressPercentage: 80,
       currentStepMessage: "Rendering selected clips in parallel...",
@@ -221,7 +223,7 @@ async function processJobAsync(
       })
     );
 
-    updateJob({
+    await updateJob({
       status: "completed",
       progressPercentage: 100,
       currentStepMessage: sourceVideoPath
@@ -231,7 +233,7 @@ async function processJobAsync(
     });
   } catch (err: any) {
     console.error("[clipping] processJobAsync failed:", err?.message || err);
-    updateJob({
+    await updateJob({
       status: "failed",
       error: err?.message || "AI processing pipeline failed.",
       currentStepMessage: "Processing failed. Please try again.",
