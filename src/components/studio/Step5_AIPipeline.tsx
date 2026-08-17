@@ -31,6 +31,10 @@ export default function Step5_AIPipeline({
 
   useEffect(() => {
     let timerId: any = null;
+    // Hard deadline so the UI never spins forever if the serverless pipeline
+    // dies mid-flight (e.g. a function timeout with no terminal state written).
+    const startedAt = Date.now();
+    const MAX_POLL_MS = 120_000;
 
     const pollStatus = async () => {
       try {
@@ -52,6 +56,13 @@ export default function Step5_AIPipeline({
         }
       } catch (err: any) {
         console.error("Error polling job status:", err);
+      }
+
+      if (Date.now() - startedAt > MAX_POLL_MS) {
+        onError(
+          "Clip generation timed out. The source video couldn't be processed on this serverless backend — try again, or run locally for full ffmpeg/yt-dlp support."
+        );
+        return;
       }
 
       timerId = setTimeout(pollStatus, 800);
