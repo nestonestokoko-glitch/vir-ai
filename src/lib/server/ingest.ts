@@ -7,13 +7,24 @@
  * is unavailable so the caller can fall back to bundled sample footage.
  */
 
-import { execFile, type ExecFileOptions } from "node:child_process";
+import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { findFfmpeg, findYtDlp, PROJECT_ROOT } from "./paths";
 import { extractYouTubeId } from "@/lib/youtube";
 
 const WORK_DIR = path.join(PROJECT_ROOT, "tmp", "ingest");
+
+/**
+ * YouTube bot-blocks the default web client's download URLs (HTTP 403 /
+ * "Video unavailable") from many datacenter / shared IPs. The `android`
+ * player client is the most reliable for direct downloads in this environment;
+ * the extra clients are fallbacks yt-dlp tries in order if `android` fails.
+ */
+const YTDLP_PLAYER_CLIENT_ARGS = [
+  "--extractor-args",
+  "youtube:player_client=android,web_safari,tv,ios,web",
+];
 
 export interface IngestResult {
   videoPath: string; // local path to downloaded video
@@ -72,6 +83,7 @@ export async function fetchCaptionsOnly(url: string): Promise<string | null> {
   try {
     await runYtDlp(
       [
+        ...YTDLP_PLAYER_CLIENT_ARGS,
         url,
         "--no-playlist",
         "--skip-download",
@@ -121,6 +133,7 @@ export async function ingestVideo(url: string): Promise<IngestResult | null> {
     // Download video. Prefer a pre-muxed MP4 so no merge step is required.
     await runYtDlp(
       [
+        ...YTDLP_PLAYER_CLIENT_ARGS,
         url,
         "--no-playlist",
         "-f",
@@ -138,7 +151,7 @@ export async function ingestVideo(url: string): Promise<IngestResult | null> {
     // stream so we still get a real clip instead of bailing out to null.
     if (!fs.existsSync(videoPath)) {
       await runYtDlp(
-        [url, "--no-playlist", "-o", videoPath, "--no-warnings", "--quiet"],
+        [...YTDLP_PLAYER_CLIENT_ARGS, url, "--no-playlist", "-o", videoPath, "--no-warnings", "--quiet"],
         300_000
       );
     }
@@ -149,6 +162,7 @@ export async function ingestVideo(url: string): Promise<IngestResult | null> {
     try {
       await runYtDlp(
         [
+          ...YTDLP_PLAYER_CLIENT_ARGS,
           url,
           "--no-playlist",
           "--skip-download",
