@@ -12,6 +12,7 @@ import { ingestVideo, fetchCaptionsOnly } from "@/lib/server/ingest";
 import { transcribeAudio } from "@/lib/server/transcribe";
 import { renderClip, getVideoDuration } from "@/lib/server/render";
 import { saveJob, getJob } from "@/lib/server/jobStore";
+import { IS_SERVERLESS } from "@/lib/server/isServerless";
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,16 +54,6 @@ export async function POST(req: NextRequest) {
 
     await saveJob(initialJob);
 
-    // Detect serverless reliably. `NETLIFY` is supposed to be injected, but be
-    // defensive: Netlify also sets CONTEXT / DEPLOY_URL / URL in the function
-    // runtime, so any of these means we're on serverless and must await.
-    const IS_SERVERLESS = !!(
-      process.env.NETLIFY ||
-      process.env.CONTEXT ||
-      process.env.DEPLOY_URL ||
-      process.env.NETLIFY_DEV
-    );
-
     // On serverless the runtime freezes background work after the HTTP response
     // is sent, so a fire-and-forget job would never finish and the UI would hang
     // forever. Await it here so the function stays alive until the job is
@@ -80,14 +71,6 @@ export async function POST(req: NextRequest) {
       success: true,
       jobId,
       job: initialJob,
-      // TEMP diagnostic — removed after verifying serverless detection.
-      _env: {
-        NETLIFY: process.env.NETLIFY,
-        CONTEXT: process.env.CONTEXT,
-        DEPLOY_URL: process.env.DEPLOY_URL ? "set" : undefined,
-        URL: process.env.URL ? "set" : undefined,
-        serverless: IS_SERVERLESS,
-      },
     });
   } catch (error: any) {
     return NextResponse.json(

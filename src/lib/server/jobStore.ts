@@ -13,8 +13,9 @@
 
 import { getStore, type Store } from "@netlify/blobs";
 import type { ProcessingJob } from "@/lib/clip-types";
+import { IS_SERVERLESS } from "@/lib/server/isServerless";
 
-const useBlobs = !!process.env.NETLIFY;
+const useBlobs = IS_SERVERLESS;
 
 const memory = new Map<string, ProcessingJob>();
 let _store: Store | null = null;
