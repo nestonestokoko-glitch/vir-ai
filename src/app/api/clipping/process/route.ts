@@ -53,14 +53,24 @@ export async function POST(req: NextRequest) {
 
     await saveJob(initialJob);
 
-    // On serverless (Netlify) the runtime freezes background work after the
-    // HTTP response is sent, so a fire-and-forget job would never finish and
-    // the UI would hang forever. Await it here so the function stays alive
-    // until the job is complete. The no-binary path (no yt-dlp/ffmpeg) is fast,
-    // and the external network calls are bounded by timeouts, so this stays
-    // well within the function timeout. Locally we keep it fire-and-forget so
-    // the dev server stays responsive during long video downloads.
-    if (process.env.NETLIFY) {
+    // Detect serverless reliably. `NETLIFY` is supposed to be injected, but be
+    // defensive: Netlify also sets CONTEXT / DEPLOY_URL / URL in the function
+    // runtime, so any of these means we're on serverless and must await.
+    const IS_SERVERLESS = !!(
+      process.env.NETLIFY ||
+      process.env.CONTEXT ||
+      process.env.DEPLOY_URL ||
+      process.env.NETLIFY_DEV
+    );
+
+    // On serverless the runtime freezes background work after the HTTP response
+    // is sent, so a fire-and-forget job would never finish and the UI would hang
+    // forever. Await it here so the function stays alive until the job is
+    // complete. The no-binary path (no yt-dlp/ffmpeg) is fast and the external
+    // network calls are bounded by timeouts, so this stays within the function
+    // timeout. Locally we keep it fire-and-forget so the dev server stays
+    // responsive during long video downloads.
+    if (IS_SERVERLESS) {
       await processJobAsync(jobId, config, metadata, clipCount, clipDuration);
     } else {
       processJobAsync(jobId, config, metadata, clipCount, clipDuration);
@@ -70,6 +80,14 @@ export async function POST(req: NextRequest) {
       success: true,
       jobId,
       job: initialJob,
+      // TEMP diagnostic — removed after verifying serverless detection.
+      _env: {
+        NETLIFY: process.env.NETLIFY,
+        CONTEXT: process.env.CONTEXT,
+        DEPLOY_URL: process.env.DEPLOY_URL ? "set" : undefined,
+        URL: process.env.URL ? "set" : undefined,
+        serverless: IS_SERVERLESS,
+      },
     });
   } catch (error: any) {
     return NextResponse.json(
