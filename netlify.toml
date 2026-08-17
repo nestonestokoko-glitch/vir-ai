@@ -11,9 +11,3 @@
 # Netlify installs this plugin automatically at build time.
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-# The clipping pipeline is awaited inside the function on serverless (so the
-# job actually completes instead of being frozen after the response). Give it
-# generous headroom beyond the default timeout for the real caption fetch.
-[functions]
-  timeout = 60
