@@ -51,17 +51,17 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
-      <div className="relative w-full max-w-4xl rounded-3xl border border-[#1f293d] bg-[#070b14] p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-md">
+      <div className="relative w-full max-w-4xl rounded-[24px] border border-brand-border bg-elevated p-6 shadow-card-inset">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-brand-border pb-4">
           <div className="flex items-center gap-2">
-            <Sliders className="h-5 w-5 text-[#0488C5]" />
-            <h3 className="text-lg font-extrabold text-white">Interactive Clip Editor</h3>
+            <Sliders className="h-5 w-5 text-cyan" />
+            <h3 className="text-lg font-bold text-ink">Interactive Clip Editor</h3>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-slate-800 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-secondary transition-colors hover:bg-elevated hover:text-ink"
           >
             <X className="h-5 w-5" />
           </button>
@@ -71,7 +71,7 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Left Column: Live Canvas Preview */}
           <div className="lg:col-span-5 flex flex-col items-center">
-            <h4 className="text-xs font-bold text-gray-400 mb-2">Live Edited Canvas Preview</h4>
+            <h4 className="mb-2 text-xs font-bold text-ink-muted">Live Edited Canvas Preview</h4>
             <ClipPlayerCanvas clip={editedClip} autoPlay />
           </div>
 
@@ -79,24 +79,24 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
           <div className="lg:col-span-7 space-y-5">
             {/* 1. Format Selection */}
             <div>
-              <label className="block text-xs font-bold text-gray-300 mb-1.5">Canvas Format</label>
+              <label className="mb-1.5 block text-xs font-bold text-ink-secondary">Canvas Format</label>
               <div className="flex gap-3">
                 <button
                   onClick={() => update({ format: "portrait" })}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-bold ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-bold transition-all duration-200 ${
                     editedClip.format === "portrait"
-                      ? "border-[#0488C5] bg-[#0488C5]/20 text-white"
-                      : "border-slate-800 bg-[#0d1322] text-gray-400"
+                      ? "border-brand-light bg-brand-light/15 text-ink"
+                      : "border-brand-border bg-surface text-ink-secondary"
                   }`}
                 >
                   <Smartphone className="h-4 w-4" /> 9:16 Portrait
                 </button>
                 <button
                   onClick={() => update({ format: "landscape" })}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-bold ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-bold transition-all duration-200 ${
                     editedClip.format === "landscape"
-                      ? "border-[#526EF5] bg-[#526EF5]/20 text-white"
-                      : "border-slate-800 bg-[#0d1322] text-gray-400"
+                      ? "border-brand-light bg-brand-light/15 text-ink"
+                      : "border-brand-border bg-surface text-ink-secondary"
                   }`}
                 >
                   <Monitor className="h-4 w-4" /> 16:9 Landscape
@@ -106,11 +106,11 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
 
             {/* 2. Font Selection */}
             <div>
-              <label className="block text-xs font-bold text-gray-300 mb-1.5">Caption Font</label>
+              <label className="mb-1.5 block text-xs font-bold text-ink-secondary">Caption Font</label>
               <select
                 value={editedClip.font}
                 onChange={(e) => update({ font: e.target.value as ClippingFont })}
-                className="w-full rounded-xl border border-slate-800 bg-[#0d1322] p-2.5 text-xs font-bold text-white focus:border-[#0488C5] focus:outline-none"
+                className="w-full rounded-xl border border-brand-border bg-surface p-2.5 text-xs font-bold text-ink focus:border-brand-light focus:outline-none"
               >
                 {FONTS.map((f) => (
                   <option key={f} value={f}>
@@ -123,11 +123,11 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
             {/* 3. Subtitle Style & Animation */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Subtitle Style</label>
+                <label className="mb-1.5 block text-xs font-bold text-ink-secondary">Subtitle Style</label>
                 <select
                   value={editedClip.style}
                   onChange={(e) => update({ style: e.target.value as SubtitleStyle })}
-                  className="w-full rounded-xl border border-slate-800 bg-[#0d1322] p-2.5 text-xs font-bold text-white focus:border-[#0488C5] focus:outline-none"
+                  className="w-full rounded-xl border border-brand-border bg-surface p-2.5 text-xs font-bold text-ink focus:border-brand-light focus:outline-none"
                 >
                   {STYLES.map((s) => (
                     <option key={s} value={s}>
@@ -138,11 +138,11 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Animation</label>
+                <label className="mb-1.5 block text-xs font-bold text-ink-secondary">Animation</label>
                 <select
                   value={editedClip.animation}
                   onChange={(e) => update({ animation: e.target.value as TextAnimation })}
-                  className="w-full rounded-xl border border-slate-800 bg-[#0d1322] p-2.5 text-xs font-bold text-white focus:border-[#0488C5] focus:outline-none"
+                  className="w-full rounded-xl border border-brand-border bg-surface p-2.5 text-xs font-bold text-ink focus:border-brand-light focus:outline-none"
                 >
                   {ANIMATIONS.map((a) => (
                     <option key={a} value={a}>
@@ -155,16 +155,16 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
 
             {/* 4. Caption Position */}
             <div>
-              <label className="block text-xs font-bold text-gray-300 mb-1.5">Caption Position</label>
+              <label className="mb-1.5 block text-xs font-bold text-ink-secondary">Caption Position</label>
               <div className="flex gap-2">
                 {(["top", "center", "bottom"] as CaptionPosition[]).map((pos) => (
                   <button
                     key={pos}
                     onClick={() => update({ captionPosition: pos })}
-                    className={`flex-1 rounded-xl border py-2 text-xs font-bold capitalize ${
+                    className={`flex-1 rounded-xl border py-2 text-xs font-bold capitalize transition-all duration-200 ${
                       editedClip.captionPosition === pos
-                        ? "border-sky-400 bg-sky-400/20 text-white"
-                        : "border-slate-800 bg-[#0d1322] text-gray-400"
+                        ? "border-cyan bg-cyan/20 text-ink"
+                        : "border-brand-border bg-surface text-ink-secondary"
                     }`}
                   >
                     {pos}
@@ -174,11 +174,11 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
             </div>
 
             {/* 5. Start/End Trim Adjustment */}
-            <div className="rounded-xl border border-slate-800 bg-[#0d1322] p-3 space-y-2">
-              <label className="block text-xs font-bold text-gray-300">Trim Timestamps (Seconds)</label>
+            <div className="space-y-2 rounded-xl border border-brand-border bg-surface p-3">
+              <label className="block text-xs font-bold text-ink-secondary">Trim Timestamps (Seconds)</label>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="text-[10px] text-gray-400">Start Time (sec)</span>
+                  <span className="text-[10px] text-ink-muted">Start Time (sec)</span>
                   <input
                     type="number"
                     value={editedClip.startTime}
@@ -186,11 +186,11 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
                       const st = Math.max(0, Number(e.target.value));
                       update({ startTime: st, duration: editedClip.endTime - st });
                     }}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-bold text-white"
+                    className="w-full rounded-lg border border-brand-border bg-deep px-3 py-1.5 text-xs font-bold text-ink"
                   />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-400">End Time (sec)</span>
+                  <span className="text-[10px] text-ink-muted">End Time (sec)</span>
                   <input
                     type="number"
                     value={editedClip.endTime}
@@ -198,7 +198,7 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
                       const et = Math.max(editedClip.startTime + 5, Number(e.target.value));
                       update({ endTime: et, duration: et - editedClip.startTime });
                     }}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-bold text-white"
+                    className="w-full rounded-lg border border-brand-border bg-deep px-3 py-1.5 text-xs font-bold text-ink"
                   />
                 </div>
               </div>
@@ -207,16 +207,16 @@ export default function Step7_ClipEditor({ clip, onSaveClip, onClose }: Step7Pro
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-6 flex items-center justify-end gap-3 border-t border-slate-800 pt-4">
+        <div className="mt-6 flex items-center justify-end gap-3 border-t border-brand-border pt-4">
           <button
             onClick={onClose}
-            className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-2.5 text-xs font-bold text-gray-300 hover:text-white"
+            className="rounded-xl border border-brand-border bg-elevated px-5 py-2.5 text-xs font-bold text-ink-secondary transition-colors hover:text-ink"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0488C5] to-[#526EF5] px-6 py-2.5 text-xs font-extrabold text-white shadow-xl hover:scale-105"
+            className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2.5 text-xs font-bold text-ink shadow-brand transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-brand-glow"
           >
             <Save className="h-4 w-4" />
             <span>Save Clip Customizations</span>

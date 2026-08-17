@@ -44,6 +44,12 @@ drawCharX(
 - Characters are positioned **manually** (measure each glyph width, advance `x`), so live
   `letterSpacing` must be reset to `"0px"` before calling.
 
+- `src/app/editor/components/caption/captionEngine.ts` is the **Caption sibling of
+  `kineticEngine.ts`**: pure composition logic (`CaptionConfig`, `defaultCaptionConfig`,
+  `parseCaption`, `buildCaptionTimeline`, `computeCaptionState`) with NO canvas drawing — the draw
+  layer lives in `PreviewCanvas.tsx` (`drawCaptionComposition`). `CaptionConfigPanel.tsx` is the UI
+  for `CaptionConfig`.
+
 ## The canonical motion model (AE Range Selector, character granularity)
 After Effects animates text with a **Range Selector** whose `Offset` sweeps `-100% → +100%`,
 easing each character in/out over a ramp. On canvas we replicate this with a single advancing
@@ -93,32 +99,44 @@ Some styles are a FULL composition, not a per-character helper. `drawHookComposi
 (before the generic Reveal/Bounce/Fade path), so the style fully owns the look. They still
 must honor the same quality bar:
 
-**Caption is a STYLE, not a template.** After the user picks Caption, the *motion* is driven by
-`project.animation` — `drawCaptionComposition` dispatches on it: `Reveal`/`Bounce`/`Fade` route
-through the matching character helper (rendered to the offscreen canvas with a Caption-flavored
-glyph callback: bold 900, white→slight-tint gradient, glow, drop shadow); `Pop` keeps the
-whole-text rise + flicker. Unknown animations fall back to Fade. So Caption = the *look*; the
-animation selector = the *motion*.
+**Caption is a full composition owned by `captionEngine.ts` + `drawCaptionComposition`** — a
+self-contained typographic system with its OWN canonical motion (the Slide→Hold→Exit-Left lifecycle
+described below). `drawCaptionComposition` consumes the engine and does NOT dispatch on
+`project.animation`; the animation selector has no effect on Caption motion. Caption owns its
+composition entirely, independent of the generic Reveal/Bounce/Fade/Pop character helpers.
 
-- **Gradient fill** (vertical, *slight*) — Caption tints white→`lerpHex(#fff, textColor, 0.4)`:
-  deliberately understated (the tutorial's "very, very slight" gradient), NOT a bold wash.
-  The color picker still re-themes it (purple/blue/pink/green variants come "for free").
-- **RISE** = whole-text **smootherstep** (`t³(6t²−15t+10)`, clean, no flicker) from
-  `yOff = size*0.7` below, opacity 0→1. Distinct from the per-character Reveal. RISE and POP
-  are SEPARATE presets in the tutorial — do NOT fuse the pop flicker into the rise.
-  (The per-character **Fade** helper ALSO rises each glyph from `size*0.8` below on entrance.)
-- **POP** = a separate `animation` option (whole-text opacity flicker envelope
-  `0→0.45→0.2→0.75→1` over the first ~14% of the loop, then held). It also layers onto the
-  Caption style when `project.animation === "Pop"`. Driven by the speed slider.
-- **Drop shadow** (`rgba(0,0,0,0.55)`, small `+y` offset, moderate blur) + **restrained glow**
-  (one shadowBlur pass in the theme color, capped radius — never heavy).
-- **Diagonal light sweep**: draw on the offscreen canvas with
-  `globalCompositeOperation = "source-atop"` after `translate(cx,cy)+rotate(~-π/7)`, so the
-  bright band lands ONLY on the glyphs. Add a faint inner core for the edge shimmer. Plays once
-  per loop (`drawShine(cyc, cycle)`) for every Caption animation; skipped when `paused`.
-- **Speed wired** (varies per animation: `round(fps*3/speed)` for Reveal/Bounce, `autoFadeCycle`
-  for Fade, `round(fps*3.2/speed)` for Pop), **clean loop** (rise→hold→quick seam fade),
-  **`paused` shows the settled frame** (skip the shine, settled glyphs, `op=1`).
+- **Caption (typographic, slide→hold→exit-left)** — a neo-grotesque/Helvetica-style bold face
+  (default **Inter, weight 900**), **all-caps always**, with the look driven by `CaptionConfig`
+  (editable via `CaptionConfigPanel` on Step 4). Typographic foundation (typography over decoration):
+  - **Single** bold face (default Inter 900). All-caps always.
+  - **Size** calibrated to the frame (~8.5% of frame height at the default `sizeRatio`; scales with
+    portrait/landscape), so it reads at distance.
+  - **Tight corrective tracking at rest** (default `-10%` of font size — correction, not decoration).
+  - **Plain white fill** with a slight vertical white→tint gradient `lerpHex(#fff, textColor, 0.4)`
+    (understated) + ONE soft, blurred, slightly-offset drop shadow for depth (no heavy glow, no
+    rainbow shine).
+  - **Single line**, ~17-char cap (`maxChars`), no wrap; centered.
+  - **Motion — Slide → Hold → Exit Left** (Caption's own lifecycle, independent of the animation
+    selector):
+    1. **Slide-In**: a small vertical offset that *rises up into place* (not off-screen) + fade 0→100
+       + a blur **focus-pull** that resolves with the opacity. Opacity and blur finish together,
+       **ahead of the position settling** (opacity/blur done at ~70% of the slide while position still
+       eases in). Easing = `easeOutCubic` ("fast out of the gate, then long soft deceleration") — NO
+       overshoot, NO bounce. The blur is the "kerning-in-motion" stand-in (tracking stays constant at
+       rest).
+    2. **Hold**: fully static — no drift, flicker, or breathing. The typographic reading state.
+    3. **Exit-Left**: horizontal drift left off-frame + fade 100→0, `ease-in-out`, the move and the
+       fade finish together; a mirrored blur re-introduces the focus-pull on the way out (resolves with
+       the fade). Exit is horizontal to contrast the vertical entrance.
+  - **Emphasis**: `*word*` marks a word as emphasis → larger size (`emphasisScale`, default 1.4×) using
+    the **SAME typeface/weight/tracking/shadow** — only size differs (size hierarchy within the phrase).
+    Chunks arrive with a small stagger but each uses the identical three-property, same-easing motion.
+    All-caps applied to everything.
+  - **`CaptionConfig` knobs** (fully editable via `CaptionConfigPanel`): `font`, `weight`, `sizeRatio`,
+    `tracking`, `color`, `shadowBlur`, `shadowDistance`, `shadowOpacity`, `emphasisScale`, `maxChars`,
+    `slideDuration`, `holdDuration`, `exitDuration`, `blurAmount`, `speed`. The look (linked
+    `CaptionConfig`) + the motion (the engine) are separate from the generic Reveal/Bounce/Fade/Pop
+    character helpers — Caption owns its composition entirely.
 
 ## Kinetic typography system (word-based, reflow)
 The `Kinetic` style is a reusable kinetic-typography engine — NOT a single text object. It lives in

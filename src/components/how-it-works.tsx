@@ -1,76 +1,57 @@
+import { FeatureStoryboardCard } from "@/components/FeatureStoryboardCard";
+
+const STEPS = [
+  {
+    num: "01",
+    title: "Enter Your Text",
+    description:
+      "Type or paste your English text into the editor. The system automatically segments it for optimal animation timing.",
+  },
+  {
+    num: "02",
+    title: "Choose Style & Animation",
+    description:
+      "Select from professional typography styles and animation presets to match your vision and brand.",
+  },
+  {
+    num: "03",
+    title: "Customize & Preview",
+    description:
+      "Adjust colors, timing, positioning, and see your creation in real-time with our live preview.",
+  },
+  {
+    num: "04",
+    title: "Choose Format",
+    description:
+      "Select portrait (9:16) for social media stories or landscape (16:9) for YouTube and presentations.",
+  },
+  {
+    num: "05",
+    title: "Generate & Download",
+    description:
+      "One-click rendering creates your MP4 reel ready for download and sharing across platforms.",
+  },
+];
+
 export const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+    <section id="how-it-works" className="bg-black py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-16 text-center">
+          <h2 className="mb-4 text-3xl font-bold text-[#E1E0CC]">
             How It Works
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-3xl text-lg text-gray-400">
             Simple 5-step process to create stunning typography reels
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="flex items-start space-x-6">
-            <div className="flex-shrink-0 h-12 w-12 bg-indigo-50 rounded-full">
-              <span className="text-indigo-600 font-bold text-xl">1</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Enter Your Text</h3>
-              <p className="text-gray-600">
-                Type or paste your English text into the editor. The system automatically segments it for optimal animation timing.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-6">
-            <div className="flex-shrink-0 h-12 w-12 bg-indigo-50 rounded-full">
-              <span className="text-indigo-600 font-bold text-xl">2</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Style & Animation</h3>
-              <p className="text-gray-600">
-                Select from professional typography styles and animation presets to match your vision and brand.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-6">
-            <div className="flex-shrink-0 h-12 w-12 bg-indigo-50 rounded-full">
-              <span className="text-indigo-600 font-bold text-xl">3</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Customize & Preview</h3>
-              <p className="text-gray-600">
-                Adjust colors, timing, positioning, and see your creation in real-time with our live preview.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-6">
-            <div className="flex-shrink-0 h-12 w-12 bg-indigo-50 rounded-full">
-              <span className="text-indigo-600 font-bold text-xl">4</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Format</h3>
-              <p className="text-gray-600">
-                Select portrait (9:16) for social media stories or landscape (16:9) for YouTube and presentations.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-6">
-            <div className="flex-shrink-0 h-12 w-12 bg-indigo-50 rounded-full">
-              <span className="text-indigo-600 font-bold text-xl">5</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Generate & Download</h3>
-              <p className="text-gray-600">
-                One-click rendering creates your MP4 reel ready for download and sharing across platforms.
-              </p>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {STEPS.map((step) => (
+            <FeatureStoryboardCard key={step.num} num={step.num} title={step.title}>
+              {step.description}
+            </FeatureStoryboardCard>
+          ))}
         </div>
       </div>
     </section>

@@ -59,25 +59,25 @@ export default function Step3_Typography({
   onBack,
 }: Step3Props) {
   return (
-    <div className="mx-auto max-w-4xl space-y-8 py-4">
+    <div className="mx-auto max-w-4xl space-y-10 py-4">
       {/* Header */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3.5 py-1 text-xs font-semibold text-sky-400">
+        <div className="inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/10 px-3.5 py-1 text-xs font-semibold text-cyan">
           <span>Step 3 of 4 • Typography & Motion Styling</span>
         </div>
-        <h2 className="mt-3 text-2xl font-extrabold text-white sm:text-3xl">
+        <h2 className="mt-4 text-4xl font-bold tracking-tight text-ink sm:text-5xl">
           Customize Captions & Animation
         </h2>
-        <p className="mt-2 text-sm text-gray-400">
+        <p className="mx-auto mt-4 max-w-2xl text-sm text-ink-secondary sm:text-base">
           Choose the font, caption backdrop style, and motion animation to match your brand identity.
         </p>
       </div>
 
       {/* 1. Font Selection (PRD Section 7) */}
-      <div className="rounded-2xl border border-[#1f293d] bg-[#0d1322] p-6 shadow-xl">
-        <div className="flex items-center gap-2 mb-4">
-          <Type className="h-5 w-5 text-[#0488C5]" />
-          <h3 className="text-base font-bold text-white">Select Caption Font</h3>
+      <div className="rounded-[24px] border border-brand-border bg-surface p-6 shadow-card-inset">
+        <div className="mb-4 flex items-center gap-2">
+          <Type className="h-5 w-5 text-cyan" />
+          <h3 className="text-base font-bold text-ink">Select Caption Font</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -85,20 +85,20 @@ export default function Step3_Typography({
             <button
               key={f.id}
               onClick={() => onFontChange(f.id)}
-              className={`relative flex flex-col justify-between rounded-xl border p-3 text-left transition-all ${
+              className={`relative flex flex-col justify-between rounded-xl border p-3 text-left transition-all duration-200 ${
                 font === f.id
-                  ? "border-[#0488C5] bg-[#0488C5]/15 ring-2 ring-[#0488C5]"
-                  : "border-slate-800 bg-[#070b14] hover:border-slate-600"
+                  ? "border-brand-light bg-brand-light/15 ring-2 ring-brand-light"
+                  : "border-brand-border bg-deep hover:border-ink-muted/40"
               }`}
             >
               {font === f.id && (
-                <div className="absolute top-2 right-2 text-[#0488C5]">
+                <div className="absolute right-2 top-2 text-cyan">
                   <Check className="h-4 w-4 stroke-[3]" />
                 </div>
               )}
-              <span className="text-[10px] font-mono text-gray-400">{f.category}</span>
+              <span className="text-[10px] font-mono text-ink-muted">{f.category}</span>
               <span
-                className="mt-2 text-base font-extrabold text-white truncate"
+                className="mt-2 truncate text-base font-bold text-ink"
                 style={{ fontFamily: f.id }}
               >
                 {f.name}
@@ -109,10 +109,10 @@ export default function Step3_Typography({
       </div>
 
       {/* 2. Subtitle Style Selection (PRD Section 8) */}
-      <div className="rounded-2xl border border-[#1f293d] bg-[#0d1322] p-6 shadow-xl">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-5 w-5 text-[#526EF5]" />
-          <h3 className="text-base font-bold text-white">Select Subtitle Style</h3>
+      <div className="rounded-[24px] border border-brand-border bg-surface p-6 shadow-card-inset">
+        <div className="mb-4 flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-cyan" />
+          <h3 className="text-base font-bold text-ink">Select Subtitle Style</h3>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -120,29 +120,29 @@ export default function Step3_Typography({
             <button
               key={s.id}
               onClick={() => onStyleChange(s.id)}
-              className={`relative flex flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+              className={`relative flex flex-col justify-between rounded-xl border p-4 text-left transition-all duration-200 ${
                 style === s.id
-                  ? "border-[#526EF5] bg-[#526EF5]/15 ring-2 ring-[#526EF5]"
-                  : "border-slate-800 bg-[#070b14] hover:border-slate-600"
+                  ? "border-brand-light bg-brand-light/15 ring-2 ring-brand-light"
+                  : "border-brand-border bg-deep hover:border-ink-muted/40"
               }`}
             >
               {style === s.id && (
-                <div className="absolute top-2 right-2 text-[#526EF5]">
+                <div className="absolute right-2 top-2 text-cyan">
                   <Check className="h-4 w-4 stroke-[3]" />
                 </div>
               )}
-              <h4 className="text-sm font-bold text-white">{s.name}</h4>
-              <p className="mt-1 text-xs text-gray-400">{s.desc}</p>
-              
+              <h4 className="text-sm font-bold text-ink">{s.name}</h4>
+              <p className="mt-1 text-xs text-ink-secondary">{s.desc}</p>
+
               {/* Visual preview pill */}
-              <div className="mt-3 rounded-lg border border-slate-700 bg-black/60 p-2 text-center">
+              <div className="mt-3 rounded-lg border border-brand-border bg-black/60 p-2 text-center">
                 <span
-                  className={`text-xs font-bold text-white ${
-                    s.id === "Kinetic" ? "text-sky-400 underline" : ""
+                  className={`text-xs font-bold text-ink ${
+                    s.id === "Kinetic" ? "text-cyan underline" : ""
                   }`}
                   style={{ fontFamily: font }}
                 >
-                  "THE BEST MOMENTS"
+                  &ldquo;THE BEST MOMENTS&rdquo;
                 </span>
               </div>
             </button>
@@ -151,10 +151,10 @@ export default function Step3_Typography({
       </div>
 
       {/* 3. Text Animation Selection (PRD Section 9) */}
-      <div className="rounded-2xl border border-[#1f293d] bg-[#0d1322] p-6 shadow-xl">
-        <div className="flex items-center gap-2 mb-4">
-          <Wand2 className="h-5 w-5 text-amber-400" />
-          <h3 className="text-base font-bold text-white">Select Text Animation</h3>
+      <div className="rounded-[24px] border border-brand-border bg-surface p-6 shadow-card-inset">
+        <div className="mb-4 flex items-center gap-2">
+          <Wand2 className="h-5 w-5 text-cyan" />
+          <h3 className="text-base font-bold text-ink">Select Text Animation</h3>
         </div>
 
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
@@ -162,19 +162,19 @@ export default function Step3_Typography({
             <button
               key={a.id}
               onClick={() => onAnimationChange(a.id)}
-              className={`relative flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all ${
+              className={`relative flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all duration-200 ${
                 animation === a.id
-                  ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400"
-                  : "border-slate-800 bg-[#070b14] hover:border-slate-600"
+                  ? "border-cyan bg-cyan/15 ring-2 ring-cyan"
+                  : "border-brand-border bg-deep hover:border-ink-muted/40"
               }`}
             >
               {animation === a.id && (
-                <div className="absolute top-2 right-2 text-amber-400">
+                <div className="absolute right-2 top-2 text-cyan">
                   <Check className="h-4 w-4 stroke-[3]" />
                 </div>
               )}
-              <span className="text-[10px] font-mono text-amber-400">{a.tag}</span>
-              <span className="mt-1 text-xs font-extrabold text-white">{a.name}</span>
+              <span className="text-[10px] font-mono text-cyan">{a.tag}</span>
+              <span className="mt-1 text-xs font-bold text-ink">{a.name}</span>
             </button>
           ))}
         </div>
@@ -184,7 +184,7 @@ export default function Step3_Typography({
       <div className="flex items-center justify-between pt-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-5 py-3 text-sm font-semibold text-gray-300 hover:border-slate-500 hover:text-white"
+          className="flex items-center gap-2 rounded-xl border border-brand-border bg-elevated px-5 py-3 text-sm font-semibold text-ink-secondary transition-colors hover:border-ink-muted hover:text-ink"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
@@ -192,7 +192,7 @@ export default function Step3_Typography({
 
         <button
           onClick={onNext}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0488C5] to-[#526EF5] px-6 py-3.5 text-sm font-bold text-white shadow-xl hover:scale-105"
+          className="flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-ink shadow-brand transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-brand-glow"
         >
           <span>Next: Clip Quantity & Duration</span>
           <ArrowRight className="h-4 w-4" />

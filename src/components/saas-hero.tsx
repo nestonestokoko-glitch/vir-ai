@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import type { CSSProperties, FormEvent, ReactNode } from "react";
+import { Navbar1 } from "@/components/ui/navbar-1";
 
 const grassImage =
   "https://res.cloudinary.com/dy5er7kv5/image/upload/q_auto/f_auto/v1781191264/grass_eam204.png";
@@ -43,64 +43,6 @@ const Icon = ({ name, className = "h-5 w-5" }: IconProps & { name: string }) => 
     <svg className={className} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
       {paths[name]}
     </svg>
-  );
-};
-
-const navItems = ["Templates", "Styles", "Pricing"];
-
-const Navbar = () => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <nav className="animate-fade-down relative z-20 px-5 py-4 sm:px-8 sm:py-5 lg:px-10">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-gray-900" aria-label="VIR AI home">
-          <Logo className="h-5 w-5 sm:h-6 sm:w-6" />
-          <span className="text-[15px] font-semibold tracking-normal">VIR AI</span>
-        </Link>
-
-        <div className="hidden items-center gap-8 md:flex">
-          <Link href="/studio" className="text-[13px] font-semibold text-gray-900 transition-colors hover:text-sky-600">
-            Studio Hub
-          </Link>
-          <Link href="/editor" className="text-[13px] text-gray-700 transition-colors hover:text-gray-900">
-            Typography Reels
-          </Link>
-          <Link href="/studio/clipping" className="flex items-center gap-1 text-[13px] font-semibold text-indigo-600 transition-colors hover:text-indigo-800">
-            AI Clipping
-            <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] text-indigo-600 font-bold">NEW</span>
-          </Link>
-          <a href="#how-it-works" className="text-[13px] text-gray-700 transition-colors hover:text-gray-900">
-            Workflow
-          </a>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link href="/studio" className="rounded-full bg-gradient-to-r from-gray-900 via-slate-800 to-indigo-950 px-4 py-2 text-[13px] font-semibold text-white shadow-md transition-all hover:scale-105 sm:px-5">
-            Open Studio ✨
-          </Link>
-          <button
-            type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-gray-900 transition-colors hover:bg-gray-900/10 md:hidden"
-            aria-label="Toggle menu"
-            aria-expanded={open}
-            onClick={() => setOpen((value) => !value)}
-          >
-            <Icon name={open ? "x" : "menu"} />
-          </button>
-        </div>
-      </div>
-
-      {open ? (
-        <div className="animate-fade-up absolute left-4 right-4 top-full rounded-2xl bg-white/95 px-5 py-3 shadow-xl ring-1 ring-gray-200 md:hidden">
-          {navItems.map((item) => (
-            <a key={item} href={item === "Templates" ? "#typography" : item === "Styles" ? "#animation" : "#features"} className="block border-b border-gray-200 py-3 text-[15px] text-gray-700 last:border-b-0 hover:text-gray-900">
-              {item}
-            </a>
-          ))}
-        </div>
-      ) : null}
-    </nav>
   );
 };
 
@@ -257,7 +199,7 @@ export const SaasHero = () => {
   };
 
   return (
-    <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-sky-100">
+    <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-sky-100 pt-28">
       <video
         className="absolute inset-0 h-full w-full object-cover"
         autoPlay
@@ -269,13 +211,12 @@ export const SaasHero = () => {
         <source src="/windblowing-mobile.mp4" type="video/mp4" media="(max-width: 639px)" />
         <source src="/wind-blowing.mp4" type="video/mp4" />
       </video>
-      <Navbar />
+      <Navbar1 />
       <div className="flex-1 shrink-0 sm:min-h-12 lg:min-h-16" />
 
       <div className="relative z-20 mx-auto flex w-full max-w-4xl flex-col items-center px-5 text-center">
-        <h1 className="font-normal leading-[1.05] tracking-tight text-gray-900 text-[40px] min-[400px]:text-[44px] sm:text-6xl lg:text-7xl xl:text-[80px]">
-          <span className="animate-fade-up block">Make text move.</span>
-          <span className="animate-fade-up block [animation-delay:100ms]">Effortlessly.</span>
+        <h1 className="font-semibold leading-[1.05] tracking-tight text-[#0F3D2E] capitalize text-[40px] min-[400px]:text-[44px] sm:text-6xl lg:text-7xl xl:text-[80px]">
+          <span className="animate-fade-up block">Generate Clips From A Long Video</span>
         </h1>
 
         <form className="animate-fade-up mt-5 w-full max-w-xl [animation-delay:220ms] sm:mt-6" onSubmit={handleSubmit}>
@@ -285,7 +226,7 @@ export const SaasHero = () => {
               placeholder="Type a hook for your next reel..."
               aria-label="Typography reel prompt"
             />
-            <Link href="/editor" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-white transition-transform hover:scale-105 active:scale-95 sm:h-10 sm:w-10" aria-label="Start creating">
+            <Link href="/studio" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-white transition-transform hover:scale-105 active:scale-95 sm:h-10 sm:w-10" aria-label="Start creating">
               <Icon name="arrowUp" className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
             </Link>
           </div>

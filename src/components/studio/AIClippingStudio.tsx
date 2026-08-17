@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import {
   VideoMetadata,
   VideoFormat,
@@ -18,12 +19,12 @@ import Step4_ClipSettings from "./Step4_ClipSettings";
 import Step5_AIPipeline from "./Step5_AIPipeline";
 import Step6_ClipGallery from "./Step6_ClipGallery";
 import Step7_ClipEditor from "./Step7_ClipEditor";
-import { Video, Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 
 export default function AIClippingStudio() {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
-  
+
   // Customization state
   const [format, setFormat] = useState<VideoFormat>("portrait");
   const [font, setFont] = useState<ClippingFont>("Inter");
@@ -93,132 +94,143 @@ export default function AIClippingStudio() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#070b14] px-4 py-6 sm:px-6 lg:px-8">
-      {/* Wizard Progress Indicator */}
-      {step <= 4 && (
-        <div className="mx-auto max-w-4xl mb-8">
-          <div className="flex items-center justify-between">
-            {[
-              { num: 1, title: "1. Source Video" },
-              { num: 2, title: "2. Format" },
-              { num: 3, title: "3. Typography" },
-              { num: 4, title: "4. Clip Settings" },
-            ].map((s) => {
-              const isPast = step > s.num;
-              const isCurrent = step === s.num;
-
-              return (
-                <div key={s.num} className="flex flex-1 items-center">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
-                        isPast
-                          ? "bg-emerald-500 text-white"
-                          : isCurrent
-                          ? "bg-gradient-to-r from-[#0488C5] to-[#526EF5] text-white shadow-lg shadow-[#0488C5]/30 ring-2 ring-[#0488C5]/50"
-                          : "bg-slate-800 text-gray-500"
-                      }`}
-                    >
-                      {isPast ? <Check className="h-4 w-4 stroke-[3]" /> : s.num}
+    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-deep">
+      <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Wizard Progress Indicator */}
+        {step <= 4 && (
+          <div className="mx-auto mb-12 max-w-2xl">
+            <div className="relative">
+              {/* Track */}
+              <div className="absolute left-5 right-5 top-5 h-[2px] -translate-y-1/2 rounded-full bg-brand-border" />
+              <div
+                className="absolute left-5 top-5 h-[2px] -translate-y-1/2 rounded-full bg-brand shadow-[0_0_12px_rgba(32,184,230,0.45)] transition-all duration-500"
+                style={{ width: `calc((100% - 40px) * ${(step - 1) / 3})` }}
+              />
+              <div className="relative flex items-start justify-between">
+                {[
+                  { num: 1, title: "Source" },
+                  { num: 2, title: "Format" },
+                  { num: 3, title: "Style" },
+                  { num: 4, title: "Settings" },
+                ].map((s) => {
+                  const isPast = step > s.num;
+                  const isCurrent = step === s.num;
+                  return (
+                    <div key={s.num} className="flex w-20 flex-col items-center gap-2.5">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all duration-500 ${
+                          isPast
+                            ? "border border-success/30 bg-success/15 text-success"
+                            : isCurrent
+                              ? "bg-brand text-ink shadow-brand-glow ring-1 ring-cyan/40"
+                              : "border border-brand-border bg-elevated text-ink-muted"
+                        }`}
+                      >
+                        {isPast ? <Check className="h-5 w-5 stroke-[3]" /> : s.num}
+                      </div>
+                      <span
+                        className={`text-[11px] font-semibold tracking-wide transition-colors duration-300 ${
+                          isCurrent
+                            ? "text-ink"
+                            : isPast
+                              ? "text-success"
+                              : "text-ink-muted"
+                        }`}
+                      >
+                        {s.title}
+                      </span>
                     </div>
-                    <span
-                      className={`hidden text-xs font-bold sm:inline ${
-                        isCurrent ? "text-white" : isPast ? "text-emerald-400" : "text-gray-500"
-                      }`}
-                    >
-                      {s.title}
-                    </span>
-                  </div>
-                  {s.num < 4 && (
-                    <div
-                      className={`mx-3 h-0.5 flex-1 rounded ${
-                        step > s.num ? "bg-emerald-500" : "bg-slate-800"
-                      }`}
-                    />
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {errorMsg && (
-        <div className="mx-auto max-w-3xl mb-6 rounded-2xl border border-red-500/40 bg-red-950/50 p-4 text-center text-xs text-red-200">
-          {errorMsg}
-        </div>
-      )}
+        {errorMsg && (
+          <div className="mx-auto mb-6 max-w-3xl rounded-2xl border border-red-500/40 bg-red-950/50 p-4 text-center text-xs text-red-200">
+            {errorMsg}
+          </div>
+        )}
 
-      {/* Step Render Switch */}
-      {step === 1 && (
-        <Step1_PasteVideo
-          metadata={metadata}
-          onMetadataFetched={(meta) => setMetadata(meta)}
-          onNext={() => setStep(2)}
-        />
-      )}
+        {/* Step Render Switch (subtle entrance transition) */}
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {step === 1 && (
+            <Step1_PasteVideo
+              metadata={metadata}
+              onMetadataFetched={(meta) => setMetadata(meta)}
+              onNext={() => setStep(2)}
+            />
+          )}
 
-      {step === 2 && (
-        <Step2_Format
-          format={format}
-          onFormatChange={setFormat}
-          onNext={() => setStep(3)}
-          onBack={() => setStep(1)}
-        />
-      )}
+          {step === 2 && (
+            <Step2_Format
+              format={format}
+              onFormatChange={setFormat}
+              onNext={() => setStep(3)}
+              onBack={() => setStep(1)}
+            />
+          )}
 
-      {step === 3 && (
-        <Step3_Typography
-          font={font}
-          style={style}
-          animation={animation}
-          onFontChange={setFont}
-          onStyleChange={setStyle}
-          onAnimationChange={setAnimation}
-          onNext={() => setStep(4)}
-          onBack={() => setStep(2)}
-        />
-      )}
+          {step === 3 && (
+            <Step3_Typography
+              font={font}
+              style={style}
+              animation={animation}
+              onFontChange={setFont}
+              onStyleChange={setStyle}
+              onAnimationChange={setAnimation}
+              onNext={() => setStep(4)}
+              onBack={() => setStep(2)}
+            />
+          )}
 
-      {step === 4 && (
-        <Step4_ClipSettings
-          clipCount={clipCount}
-          clipDuration={clipDuration}
-          onClipCountChange={setClipCount}
-          onClipDurationChange={setClipDuration}
-          onStartAnalysis={startAIPipeline}
-          onBack={() => setStep(3)}
-        />
-      )}
+          {step === 4 && (
+            <Step4_ClipSettings
+              clipCount={clipCount}
+              clipDuration={clipDuration}
+              onClipCountChange={setClipCount}
+              onClipDurationChange={setClipDuration}
+              onStartAnalysis={startAIPipeline}
+              onBack={() => setStep(3)}
+            />
+          )}
 
-      {step === 5 && activeJobId && metadata && (
-        <Step5_AIPipeline
-          jobId={activeJobId}
-          metadata={metadata}
-          onJobCompleted={handleJobCompleted}
-          onError={(msg) => {
-            setErrorMsg(msg);
-            setStep(4);
-          }}
-        />
-      )}
+          {step === 5 && activeJobId && metadata && (
+            <Step5_AIPipeline
+              jobId={activeJobId}
+              metadata={metadata}
+              onJobCompleted={handleJobCompleted}
+              onError={(msg) => {
+                setErrorMsg(msg);
+                setStep(4);
+              }}
+            />
+          )}
 
-      {step === 6 && (
-        <Step6_ClipGallery
-          clips={generatedClips}
-          onEditClip={(clip) => setEditingClip(clip)}
-          onReset={handleReset}
-        />
-      )}
+          {step === 6 && (
+            <Step6_ClipGallery
+              clips={generatedClips}
+              onEditClip={(clip) => setEditingClip(clip)}
+              onReset={handleReset}
+            />
+          )}
+        </motion.div>
 
-      {/* Interactive Modal Clip Editor */}
-      {editingClip && (
-        <Step7_ClipEditor
-          clip={editingClip}
-          onSaveClip={handleUpdateClipInGallery}
-          onClose={() => setEditingClip(null)}
-        />
-      )}
+        {/* Interactive Modal Clip Editor */}
+        {editingClip && (
+          <Step7_ClipEditor
+            clip={editingClip}
+            onSaveClip={handleUpdateClipInGallery}
+            onClose={() => setEditingClip(null)}
+          />
+        )}
+      </div>
     </div>
   );
 }
